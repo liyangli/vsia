@@ -116,6 +116,24 @@ Agent.prototype = {
             }
         });
     },
+
+    /**
+     * 验证名称是否存在;主要进行验证对应缓存中是否存在相关数据
+     * @param name 进程名称
+     * @returns {boolean} true 已经存在;false 不存在
+     */
+    validateHaveName: function(name){
+        var sysCache = this.god.sysCache;
+        var flag = false;
+        for(var i in sysCache){
+            var cache = sysCache[i];
+            if(cache.name == name){
+                flag = true;
+                break;
+            }
+        }
+        return flag;
+    },
     /**
      * 删除对应缓存数据
      * @param name
