@@ -81,8 +81,28 @@
                    area: ["80%", "80%"],
                    btn: ["确定", "取消"],
                    yes: function (index, layero) {
-                       //表明对应点击的确定按钮 
-                       self.doSave({name: $("#name").val(),filePath: $("#filePath").val()});
+                       //表明对应点击的确定按钮
+                       //增加对应名称的验证
+                       var name = $("#name").val();
+                       var filePath = $("#filePath").val();
+
+                       if(!name){
+                           alert("名称不能为空");
+                           $("#name").focus();
+                           return;
+                       }if(!filePath){
+                           alert("路径必须存在");
+                           $("#filePath").focus();
+                           return;
+                       }
+                       //开始验证name是否已经存在了。如果已经存在不允许进行添加
+                       if(self._validateName(name)){
+                           alert("名称已经存在,请修改为其他的名字");
+                           $("#name").focus();
+                           return;
+                       }
+                       //需要验证具体文件是否存在;如果不存在。需要提示指定文件路径不存在文件;
+                       self.doSave({name: name,filePath: filePath});
                        $('#sysAdd').hide();
                        layer.close(index);
                        //layero.close();
@@ -92,6 +112,15 @@
                
                
            },
+
+            /**
+             * 验证对应名称是否存在;如果存在返回true;不存在返回false
+             * @param name
+             * @private
+             */
+            _validateName: function(name){
+                return this.agent.validateHaveName(name);
+            },
            doSave: function(obj){
              //对应进行保存操作,直接交给对应代理工具进行处理
                var self = this;

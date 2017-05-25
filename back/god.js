@@ -76,7 +76,9 @@ class God{
          */
         this.ev.on('autoSaveDisk',()=>{
             const self = this;
+            alert("同步成功-》"+self.sysCache);
             fs.writeFile(this.filePath,JSON.stringify(self.sysCache),function(err){
+                alert("同步成功");
                 //写入成功;
                 self.ev.emit("autoSaveDiskFinish",err);
             });
@@ -123,12 +125,10 @@ class God{
      */
     findList(){
         const self = this;
-        console.info("i am findList");
-        window.console.info("i am findList");
         this.ev.emit(this.attrs.LIST);
         this.ev.on(this.attrs.LIST+"Finish",(err,result)=>{
            //表明成功了。需要进行组合一下。通过result作为基础然后进行遍历设定
-            this.ev.removeAllListeners(this.attrs.LIST+"Finish");
+            self.ev.removeAllListeners(this.attrs.LIST+"Finish");
             const runObjs = [];
             if(!err && result.length> 0){
                 for(let i in result){
@@ -143,7 +143,7 @@ class God{
                         fileSize: ''
                     };
                     //含有状态内存、cpu进程名称。需要根据名称进行匹配缓存中相关数据
-                    for(let sysObj of this.sysCache){
+                    for(let sysObj of self.sysCache){
                         if(runObj.name == sysObj.name){
                             obj.time = sysObj.time;
                             obj.fileName = sysObj.filePath;
@@ -194,10 +194,11 @@ class God{
      * @param name
      */
     delCache(name){
-        for(var i in this.sysCache){
-            var sysObj = this.sysCache[i];
+        const sysCache = this.sysCache;
+        for(var i in sysCache){
+            var sysObj = sysCache[i];
             if(sysObj.name == name){
-                this.sysCache.slice(i,0);
+                sysCache.splice(i,0);
                 break;
             }
         }
@@ -206,9 +207,12 @@ class God{
         //需要进行通知对应pm2进行移除掉
         this.ev.emit(this.attrs.DELETE,name);
         this.ev.on(this.attrs.DELETE+"Finish",(err,result)=>{
-            this.ev.removeAllListeners(this.attrs.DELETE+"Finish")
+            this.ev.removeAllListeners(this.attrs.DELETE+"Finish");
             this.ev.emit("delCacheFinish",err,result);
         });
+        //需要通知对应进行同步实例化到磁盘上;
+
+
 
     }
 
