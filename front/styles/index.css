@@ -75,3 +75,10 @@ table tr td{
 
 }
 
+.filePath {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: calc(100% - 830px);
+}
+

@@ -16,7 +16,6 @@
 const pm2 = require("pm2");
 const fs = require("fs");
 const moment = require('moment');
-
 class God{
     constructor(ev){
         this.filePath = "./config.json";
@@ -30,9 +29,10 @@ class God{
             LIST: "list",
             DESCRIBE: "describe"
         };
+        this.sysCache = [];
         this._init();
         this._pm2EventBind();
-        this.sysCache = [];
+        
         this._eventBind();
     }
 
@@ -48,8 +48,21 @@ class God{
             //查出数据直接放到对象中作为缓存记录起来;方便下次直接操作
             if(data){
                 self.sysCache = JSON.parse(data);
+                self.ev.emit("firstLoadFileFinish",self.sysCache);
             }
         });
+    }
+
+    /**
+     * 首次加载时进行动态加载数据;
+     */
+    firstLoadFile(){
+        if(!this.sysCache || this.sysCache.length == 0){
+            this._init();
+        }else{
+            this.ev.emit("firstLoadFileFinish",this.sysCache);
+        }
+        
     }
 
     /**
@@ -80,13 +93,12 @@ class God{
                console.error(err);
                process.exit(2);
            }
-           console.info(self.attrs);
+           window.console.info(self.attrs);
            for(let i in self.attrs){
                let attr = self.attrs[i];
                self.ev.on(attr,function(process){
-                   console.log("process->"+process);
+                   window.console.log("process->"+process);
                    const callback = function(err,result){
-
                        self.ev.emit(attr+"Finish",err,result);
                    };
 
@@ -111,7 +123,8 @@ class God{
      */
     findList(){
         const self = this;
-
+        console.info("i am findList");
+        window.console.info("i am findList");
         this.ev.emit(this.attrs.LIST);
         this.ev.on(this.attrs.LIST+"Finish",(err,result)=>{
            //表明成功了。需要进行组合一下。通过result作为基础然后进行遍历设定

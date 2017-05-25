@@ -23,6 +23,22 @@ var Agent = function(){
 
 };
 Agent.prototype = {
+
+
+    /**
+     * 首次加载时直接通过文件读取展示
+     * @param vm
+     */
+    firstShowSys: function(vm){
+
+       this.god.firstLoadFile();
+       const self = this;
+        let attr = "firstLoadFileFinish";
+       this.ev.on(attr,(result)=>{
+           self.ev.removeAllListeners(attr);
+           vm.list = result;
+       });
+    },
     /**
      * 查询所有的设定好的数据
      * @param vm vue对应组件对象
@@ -36,23 +52,38 @@ Agent.prototype = {
                 console.error(err);
                 return;
             }
-            //需要把组装的数据进行返回出去
-            if(!result){
-                console.info("数据不存在");
-            }
+
             //需要进行遍历其中的数据。进行动态设定上去。主要是防止设定选中状态而被取消掉了。。
             var list = vm.list;
-            for(var i in result){
-                var newObj = result[i];
-                for(var k in list){
-                    var oldObj = list[k];
+
+            for(var k in list){
+                var oldObj = list[k];
+                var flag = false;
+                for(var i in result){
+                    var newObj = result[i];
                     if(oldObj.name == newObj.name){
-                        newObj.flag = oldObj.flag;
+                        oldObj.status = newObj.status;
+                        oldObj.cpu = newObj.cpu;
+                        oldObj.mem = newObj.mem;
+                        flag = true;
                         break;
                     }
                 }
+
+                if(!flag){
+                    //表明给移除掉了;
+                    oldObj.status = "尚未监测";
+                    oldObj.cpu = "";
+                    oldObj.mem = "";
+                }
             }
-            vm.list = result;
+
+
+            if(!list || list.length == 0){
+                vm.list = result;
+            }else{
+                vm.list = JSON.parse(JSON.stringify(vm.list));
+            }
         });
     },
     /**
@@ -105,7 +136,3 @@ Agent.prototype = {
     }
 };
 
-
-var agent = new Agent();
-var vm = {};
-agent.findList(vm);

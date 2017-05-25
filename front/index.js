@@ -20,7 +20,7 @@
         '</div>' +
         '</div>' +
         '<div class="panel-body index-panel" id="content">' +
-        '<table class="table table-bordered table-striped table-responsive">' +
+        '<table class="table table-bordered table-striped table-responsive" style="table-layout: fixed;">' +
         '<tr >' +
         '<th width="30px"><input type="checkbox" v-model="allBoxFlag" v-on:click="checkAll()"></th>' +
         '<th width="100px">名称</th>' +
@@ -31,7 +31,7 @@
         '<th>文件名称</th>' +
         '<th width="100px">文件大小</th>' +
         '<th width="100px">操作</th>' +
-        '</tr></table><div class="div-con"><table class="table" >' +
+        '</tr></table><div class="div-con"><table class="table" style="table-layout: fixed;" >' +
         '<tr v-for="sys in list">' +
         '<td width="30px"><input type="checkbox" v-model="sys.flag"></td>' +
         '<td width="100px">{{sys.name}}</td>' +
@@ -39,7 +39,7 @@
         '<td width="100px">{{sys.status}}</td>' +
         '<td width="100px">{{sys.cpu}}</td>' +
         '<td width="100px">{{sys.mem}}</td>' +
-        '<td>{{sys.fileName}}</td>' +
+        '<td class="filePath" v-bind:title="sys.filePath">{{sys.filePath}}</td>' +
         '<td width="100px">{{sys.fileSize}}</td>' +
         '<td width="100px" class="opear-con"><a class="glyphicon glyphicon-edit"></a><a class="glyphicon glyphicon-minus" v-on:click="del(sys.name)"></a></td>' +
         '</tr>' +
@@ -58,8 +58,10 @@
         created: function(){
             //一开始加载就需要从后台后去所有的数据
             var self = this;
+            //首先根据对应缓存数据进行设置到页面list上进行展示
+            this.agent.firstShowSys(self);
             setInterval(function(){
-                this.agent.findList(self);
+                self.agent.findList(self);
             },1000);
             
         },
@@ -73,6 +75,7 @@
                    title: "新增",
                    content: $('#sysAdd'), //捕获的元素
                    cancel: function (index) {
+                       $('#sysAdd').hide();
                        layer.close(index);
                    },
                    area: ["80%", "80%"],
