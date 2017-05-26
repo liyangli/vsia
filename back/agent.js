@@ -118,6 +118,24 @@ Agent.prototype = {
     },
 
     /**
+     * 进行启动对应项目
+     * @param sysArray
+     */
+    doStart(sysArray){
+        this.god.doStart(sysArray);
+        this.ev.on('doStartFinish',function(err,result){
+           if(err){
+              alert("启动失败,对应错误信息为:"+err.toString());
+               return;
+           }
+
+            alert("启动成功");
+
+        });
+
+    },
+
+    /**
      * 验证名称是否存在;主要进行验证对应缓存中是否存在相关数据
      * @param name 进程名称
      * @returns {boolean} true 已经存在;false 不存在

@@ -15,6 +15,8 @@
         '<div class="panel-heading">' +
         '<div class="caption">程序集中管理</div>' +
         '<div class="tools">' +
+        '<a class="glyphicon  glyphicon-play" v-on:click="start()"></a>' +
+        '<a class="glyphicon glyphicon-stop" v-on:click="stop()"></a>' +
         '<a class="glyphicon glyphicon-plus" v-on:click="add()"></a>' +
         '<a class="glyphicon glyphicon-minus" v-on:click="del()"></a>' +
         '</div>' +
@@ -37,11 +39,16 @@
         '<td width="100px">{{sys.name}}</td>' +
         '<td width="200px">{{sys.time}}</td>' +
         '<td width="100px">{{sys.status}}</td>' +
-        '<td width="100px">{{sys.cpu}}</td>' +
-        '<td width="100px">{{sys.mem}}</td>' +
+        '<td width="100px" v-on:click="showLine(\'cpu\',sys)">{{sys.cpu}}</td>' +
+        '<td width="100px" v-on:click="showLine(\'mem\',sys)">{{sys.mem}}</td>' +
         '<td class="filePath" v-bind:title="sys.filePath">{{sys.filePath}}</td>' +
         '<td width="100px">{{sys.fileSize}}</td>' +
-        '<td width="100px" class="opear-con"><a class="glyphicon glyphicon-edit"></a><a class="glyphicon glyphicon-minus" v-on:click="del(sys.name)"></a></td>' +
+        '<td width="100px" class="opear-con">' +
+        '<a class="glyphicon glyphicon-play" v-show="sys.status != \'online\'" v-on:click="start(sys)"></a>' +
+        '<a class="glyphicon glyphicon-stop" v-show="sys.status == \'online\'" v-on:click="stop(sys.name)"></a>' +
+        '<a class="glyphicon glyphicon-edit" v-on:click="edit(sys.name)"></a>' +
+        '<a class="glyphicon glyphicon-minus" v-on:click="del(sys.name)"></a>' +
+        '</td>' +
         '</tr>' +
         '</table></div>' +
         '</div> ' +
@@ -127,6 +134,141 @@
              this.agent.doSave(obj,self);
                
            },
+            start: function(sys){
+              //if()
+                var sysArray = [];
+                if(sys)
+                if(!sys){
+                    //表明直接
+                    var list = this.list;
+                    var flag = false;
+                    for(var i in list){
+                        var playObj = list[i];
+                        if(playObj.flag){
+                            //表明Wie选中状态
+                            sysArray.push(playObj);
+                        }
+                    }
+                }else{
+                    sysArray.push(sys);
+                }
+                
+                //表明对应处理完成了;需要进行开启动作
+                if(sysArray.length == 0){
+                    alert("没有选择对应项目,请先选择对应项目进行点击启动");
+                    return;
+                }
+                
+                //开始真正启动动作
+                this.agent.doStart(sysArray);
+            },
+            showLine: function(type,sys){
+              //定时获取对应sys中相对应数据进行设定到页面上即可;
+                var title = "";
+                if(type == 'mem'){
+                    title = "内存";
+                }else if(type == 'cpu'){
+                    title = "CPU";
+                }
+                var self = this;
+                layer.open({
+                    type: 1,
+                    shade: false,
+                    title: title + "趋势图",
+                    content: $('#showLine'), //捕获的元素
+                    cancel: function (index) {
+                        $('#showLine').hide();
+                        layer.close(index);
+                    },
+                    success: function(){
+                        //成功加载后进行加载显示的额内容数据
+                        self._showLine(title,type,sys.name);
+                    },
+                    area: ["80%", "80%"],
+                    btn: ["关闭", "取消"],
+                    yes: function (index, layero) {
+                        $('#showLine').hide();
+                        layer.close(index);
+                    }
+                });
+
+            },
+
+            _showLine: function(title,type,name){
+                //组装对应data;
+                var data = {
+                   name: title,
+                   data: []//{时间,val}
+                };
+                var option = {
+                    title: {
+                        text: ''
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        formatter: function (params) {
+                            params = params[0];
+                            var date = new Date(params.name);
+                            return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() + ' : ' + params.value[1];
+                        },
+                        axisPointer: {
+                            animation: false
+                        }
+                    },
+                    xAxis: {
+                        type: 'time',
+                        splitLine: {
+                            show: false
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        boundaryGap: [0, '100%'],
+                        splitLine: {
+                            show: false
+                        }
+                    },
+                    series: [{
+                        name: type,
+                        type: 'line',
+                        showSymbol: false,
+                        hoverAnimation: false,
+                        data: data
+                    }]
+                };
+                var myChart = echarts.init($("#showLine")[0]);
+                var max = 1000;//最大1千个点
+                var self = this;
+                setInterval(function () {
+                    //动态进行添加相关数据。追加到data中。需要针对data数据最大容量进行设定
+
+                    var list = self.list;
+                    var obj ;
+                    for(var i in list){
+                        var sysObj = list[i];
+                        if(sysObj.name == name){
+                            obj = sysObj;
+                            break;
+                        }
+                    }
+                    if(!obj){
+                        data.data.push([new Date().getTime(),0]);
+                    }else{
+                        data.data.push([new Date().getTime(),obj[type]]);
+                    }
+                    if(data.data.length >= max){
+                        //移除相关数据;
+                        data.data.shift();
+                    }
+
+                    myChart.setOption({
+                        series: [{
+                            data: data
+                        }]
+                    });
+                }, 1000);
+            },
+
             /**
              * 删除主要分为3部分
              * 步骤:

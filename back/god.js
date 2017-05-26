@@ -76,9 +76,7 @@ class God{
          */
         this.ev.on('autoSaveDisk',()=>{
             const self = this;
-            alert("同步成功-》"+self.sysCache);
             fs.writeFile(this.filePath,JSON.stringify(self.sysCache),function(err){
-                alert("同步成功");
                 //写入成功;
                 self.ev.emit("autoSaveDiskFinish",err);
             });
@@ -194,11 +192,11 @@ class God{
      * @param name
      */
     delCache(name){
-        const sysCache = this.sysCache;
+        let sysCache = this.sysCache;
         for(var i in sysCache){
             var sysObj = sysCache[i];
             if(sysObj.name == name){
-                sysCache.splice(i,0);
+                sysCache.splice(i,1);
                 break;
             }
         }
@@ -214,6 +212,41 @@ class God{
 
 
 
+    }
+
+    /**
+     * 根据指定的名称进行开启对应任务
+     * @param sysArray 具体进程数组
+     */
+    doStart(sysArray){
+        
+        
+
+        for(let obj of sysArray){
+            //单独进行start一些;
+            this.ev.emit(this.attrs.START,{
+                name: obj.name,
+                script: obj.filePath,
+                output: obj.name+"-out.log",
+                logDateFormat: 'YYYY-MM-DD HH:mm:ss'
+            });
+            
+        }
+        
+        let len = sysArray.length;
+        let index = 0;
+        const errs = [];
+        const self = this;
+        this.ev.on(this.attrs.START+"Finish",(err,result)=>{
+            index ++;
+            if(index == len){
+                //表明整体都结束了;
+                self.ev.emit("doStartFinish",errs.join(","),result);
+            }
+            if(err){
+                errs.push(err);
+            }
+        });
     }
 
 
