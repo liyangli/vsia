@@ -29,9 +29,9 @@
         '<th width="200px">创建时间</th>' +
         '<th width="100px">状态</th>' +
         '<th width="100px">CPU</th>' +
-        '<th width="100px">内存</th>' +
+        '<th width="100px">内存(Mbps)</th>' +
         '<th>文件名称</th>' +
-        '<th width="100px">文件大小</th>' +
+        '<th width="100px">文件大小(Kbps)</th>' +
         '<th width="100px">操作</th>' +
         '</tr></table><div class="div-con"><table class="table" style="table-layout: fixed;" >' +
         '<tr v-for="sys in list">' +
@@ -40,7 +40,7 @@
         '<td width="200px">{{sys.time}}</td>' +
         '<td width="100px">{{sys.status}}</td>' +
         '<td width="100px" v-on:click="showLine(\'cpu\',sys)">{{sys.cpu}}</td>' +
-        '<td width="100px" v-on:click="showLine(\'mem\',sys)">{{sys.mem}}</td>' +
+        '<td width="100px" v-on:click="showLine(\'mem\',sys)">{{memRedux(sys.mem)}}</td>' +
         '<td class="filePath" v-bind:title="sys.filePath">{{sys.filePath}}</td>' +
         '<td width="100px">{{sys.fileSize}}</td>' +
         '<td width="100px" class="opear-con">' +
@@ -59,7 +59,8 @@
             return {
                 list: [],
                 allBoxFlag: false,
-                agent: new Agent()
+                agent: new Agent(),
+                lineHanlder: null
             }
         },
         created: function(){
@@ -127,6 +128,17 @@
              */
             _validateName: function(name){
                 return this.agent.validateHaveName(name);
+            },
+            /**
+             * 内存转换方法
+             *
+             * @param mem 内存
+             */
+            memRedux: function(mem){
+                if(!mem){
+                    return "";
+                }
+               return (mem/1000/1000).toFixed(2);
             },
            doSave: function(obj){
              //对应进行保存操作,直接交给对应代理工具进行处理
@@ -203,6 +215,9 @@
                     content: $('#showLine'), //捕获的元素
                     cancel: function (index) {
                         $('#showLine').hide();
+                        if(self.lineHanlder){
+                            clearInterval(self.lineHanlder);
+                        }
                         layer.close(index);
                     },
                     success: function(){
@@ -213,6 +228,9 @@
                     btn: ["关闭", "取消"],
                     yes: function (index, layero) {
                         $('#showLine').hide();
+                        if(self.lineHanlder){
+                            clearInterval(self.lineHanlder);
+                        }
                         layer.close(index);
                     }
                 });
@@ -220,11 +238,9 @@
             },
 
             _showLine: function(title,type,name){
-                //组装对应data;
-                var data = {
-                   name: title,
-                   data: []//{时间,val}
-                };
+                if(this.lineHanlder){
+                    clearInterval(this.lineHanlder);
+                }
                 var option = {
                     title: {
                         text: ''
@@ -232,9 +248,10 @@
                     tooltip: {
                         trigger: 'axis',
                         formatter: function (params) {
+                            console.info(params);
                             params = params[0];
-                            var date = new Date(params.name);
-                            return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() + ' : ' + params.value[1];
+                            var unit = (type=='mem'?'Mbps':"");
+                            return ""+params.axisValueLabel+' :</br>' + params.value[1] + unit;
                         },
                         axisPointer: {
                             animation: false
@@ -254,17 +271,17 @@
                         }
                     },
                     series: [{
-                        name: type,
+                        name: title,
                         type: 'line',
                         showSymbol: false,
                         hoverAnimation: false,
-                        data: data
+                        data: []
                     }]
                 };
                 var myChart = echarts.init($("#showLine")[0]);
                 var max = 1000;//最大1千个点
                 var self = this;
-                setInterval(function () {
+                self.lineHanlder = setInterval(function () {
                     //动态进行添加相关数据。追加到data中。需要针对data数据最大容量进行设定
 
                     var list = self.list;
@@ -276,21 +293,22 @@
                             break;
                         }
                     }
+                    var seriesData = option.series[0].data;
                     if(!obj){
-                        data.data.push([new Date().getTime(),0]);
+                        seriesData.push([new Date(),0]);
                     }else{
-                        data.data.push([new Date().getTime(),obj[type]]);
+                        if(type== "mem"){
+                            seriesData.push([new Date(),self.memRedux(obj[type])]);
+                        }else{
+                            seriesData.push([new Date(),obj[type]]);
+                        }
                     }
-                    if(data.data.length >= max){
+                    if(seriesData.length >= max){
                         //移除相关数据;
-                        data.data.shift();
+                        seriesData.shift();
                     }
 
-                    myChart.setOption({
-                        series: [{
-                            data: data
-                        }]
-                    });
+                    myChart.setOption(option);
                 }, 1000);
             },
 
