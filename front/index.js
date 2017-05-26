@@ -46,7 +46,7 @@
         '<td width="100px" class="opear-con">' +
         '<a class="glyphicon glyphicon-play" v-show="sys.status != \'online\'" v-on:click="start(sys)"></a>' +
         '<a class="glyphicon glyphicon-stop" v-show="sys.status == \'online\'" v-on:click="stop(sys.name)"></a>' +
-        '<a class="glyphicon glyphicon-edit" v-on:click="edit(sys.name)"></a>' +
+        // '<a class="glyphicon glyphicon-edit" v-on:click="edit(sys.name)"></a>' +
         '<a class="glyphicon glyphicon-minus" v-on:click="del(sys.name)"></a>' +
         '</td>' +
         '</tr>' +
