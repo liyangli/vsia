@@ -238,10 +238,39 @@ class God{
         const errs = [];
         const self = this;
         this.ev.on(this.attrs.START+"Finish",(err,result)=>{
+            self.ev.removeAllListeners(this.attrs.START+"Finish");
             index ++;
             if(index == len){
                 //表明整体都结束了;
                 self.ev.emit("doStartFinish",errs.join(","),result);
+            }
+            if(err){
+                errs.push(err);
+            }
+        });
+    }
+
+    /**
+     * 停止对应指定名称的进程
+     * @param nameArray 名称数组
+     */
+    doStop(nameArray){
+        for(let name of nameArray){
+            //单独进行start一些;
+            this.ev.emit(this.attrs.STOP,name);
+
+        }
+
+        let len = nameArray.length;
+        let index = 0;
+        const errs = [];
+        const self = this;
+        this.ev.on(this.attrs.STOP+"Finish",(err,result)=>{
+            self.ev.removeAllListeners(this.attrs.STOP+"Finish");
+            index ++;
+            if(index == len){
+                //表明整体都结束了;
+                self.ev.emit("doStopFinish",errs.join(","),result);
             }
             if(err){
                 errs.push(err);

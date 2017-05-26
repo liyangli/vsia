@@ -123,7 +123,9 @@ Agent.prototype = {
      */
     doStart(sysArray){
         this.god.doStart(sysArray);
+        var self = this;
         this.ev.on('doStartFinish',function(err,result){
+            self.ev.removeAllListeners("doStartFinish");
            if(err){
               alert("启动失败,对应错误信息为:"+err.toString());
                return;
@@ -135,6 +137,22 @@ Agent.prototype = {
 
     },
 
+    /**
+     * 进行根据名称进行停止具体进程
+     * @param nameArray name数组
+     */
+    doStop(nameArray){
+        this.god.doStop(nameArray);
+        var self = this;
+        this.ev.on("doStopFinish",function(err,result){
+            self.ev.removeAllListeners("doStopFinish");
+           if(err){
+               alert("停止失败,对应错误信息为:"+err.toString());
+               return;
+           } 
+            alert("停止成功");
+        });
+    },
     /**
      * 验证名称是否存在;主要进行验证对应缓存中是否存在相关数据
      * @param name 进程名称

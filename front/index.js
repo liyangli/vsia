@@ -137,11 +137,9 @@
             start: function(sys){
               //if()
                 var sysArray = [];
-                if(sys)
                 if(!sys){
                     //表明直接
                     var list = this.list;
-                    var flag = false;
                     for(var i in list){
                         var playObj = list[i];
                         if(playObj.flag){
@@ -158,9 +156,36 @@
                     alert("没有选择对应项目,请先选择对应项目进行点击启动");
                     return;
                 }
+
+                if(confirm("确定进行开启项目?")){
+                    //开始真正启动动作
+                    this.agent.doStart(sysArray);
+                }
+            },
+            stop: function(name){
+                //停止执行相关进程,主要根据对应进程名称进行停止
+                var nameArray = [];
+                if(!name){
+                    var list = this.list;
+                    for(var i in list){
+                        var playObj = list[i];
+                        if(playObj.flag){
+                            //表明Wie选中状态
+                            nameArray.push(playObj.name);
+                        }
+                    } 
+                }else{
+                    nameArray.push(name);
+                }
                 
-                //开始真正启动动作
-                this.agent.doStart(sysArray);
+                if(nameArray.length == 0){
+                    alert("没有选择对应项目,请先选择对应项目进行点击停止;");
+                    return;
+                }
+                if(confirm("确定进行停止项目?")){
+                    //开始真正进行停止动作
+                    this.agent.doStop(nameArray);
+                }
             },
             showLine: function(type,sys){
               //定时获取对应sys中相对应数据进行设定到页面上即可;
