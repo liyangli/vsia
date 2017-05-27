@@ -30,6 +30,7 @@
         '<th width="100px">状态</th>' +
         '<th width="100px">CPU</th>' +
         '<th width="100px">内存(Mbps)</th>' +
+        '<th width="100px">BUG</th>' +
         '<th>文件名称</th>' +
         '<th width="100px">文件大小(Kbps)</th>' +
         '<th width="100px">操作</th>' +
@@ -41,6 +42,7 @@
         '<td width="100px">{{sys.status}}</td>' +
         '<td width="100px" v-on:click="showLine(\'cpu\',sys)">{{sys.cpu}}</td>' +
         '<td width="100px" v-on:click="showLine(\'mem\',sys)">{{memRedux(sys.mem)}}</td>' +
+        '<td width="100px" >{{sys.bugNum}}</td>' +
         '<td class="filePath" v-bind:title="sys.filePath">{{sys.filePath}}</td>' +
         '<td width="100px">{{sys.fileSize}}</td>' +
         '<td width="100px" class="opear-con">' +
@@ -71,7 +73,8 @@
             setInterval(function(){
                 self.agent.findList(self);
             },1000);
-            
+            //开始进行开启对应统计日志数据。需要进行记录对应数据;包含对应当前的读取日志文件、开始位置、结束位置;
+            this.agent.logStatis();
         },
         methods: {
            add: function(){

@@ -168,6 +168,7 @@ class God{
             name: obj.name,
             script: obj.filePath,
             output: obj.name+"-out.log",
+            error: obj.name + "-err.log",
             logDateFormat: 'YYYY-MM-DD HH:mm:ss'
         });
         this.ev.on(this.attrs.START+"Finish",(err,result)=>{
@@ -179,6 +180,7 @@ class God{
         //读取文件获取对一个文件大小
         var states = fs.statSync(obj.filePath);
         obj.fileSize = states.size;
+        obj.bugNum = 0;
 
         //需要把这个数据存放到磁盘空间上
         this.sysCache.push(obj);
@@ -215,6 +217,17 @@ class God{
     }
 
     /**
+     * 日志开启对应统计动作;
+     */
+    logStatis(){
+        //读取对应日志文件。。然后根据具体文件名称然后进行匹配内容数据;需要记录的地方
+        //1、记录文件名称;2、记录文件读位置、最后更新时间;
+        //3、进行统计设定处理;
+        
+
+    }
+
+    /**
      * 根据指定的名称进行开启对应任务
      * @param sysArray 具体进程数组
      */
@@ -228,6 +241,7 @@ class God{
                 name: obj.name,
                 script: obj.filePath,
                 output: obj.name+"-out.log",
+                error: obj.name + "-err.log",
                 logDateFormat: 'YYYY-MM-DD HH:mm:ss'
             });
             

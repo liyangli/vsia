@@ -93,6 +93,13 @@ Agent.prototype = {
     addOrModify: function(vm){
         
     },
+
+    /**
+     * 日期开启对应统计动作
+     */
+    logStatis: function(){
+        this.god.logStatis();
+    },
     /**
      * 开启对应保存动作。
      * 操作步骤为:
